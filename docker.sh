@@ -2,6 +2,7 @@
 
 # 최신 Docker 버전을 GitHub API를 통해 확인
 latest_version=$(curl -s https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+#latest_version=$(curl -s https://api.github.com/repos/moby/moby/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
 
 # 현재 설치된 Docker 버전 확인
 if command -v docker &> /dev/null; then

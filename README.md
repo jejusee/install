@@ -1,7 +1,6 @@
 # install
 설치 스크립트
 
-설치
 ```
 # docker
 curl -fsSL "https://raw.githubusercontent.com/jejusee/install/main/docker.sh" | sudo bash

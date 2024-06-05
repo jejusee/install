@@ -20,7 +20,7 @@ rclone
 curl -fsSL "https://raw.githubusercontent.com/jejusee/install/main/rclone.sh" | sudo bash
 ```
 
-rclone
+flaskfarm
 ```
 curl -fsSL "https://raw.githubusercontent.com/jejusee/install/main/flaskfarm.sh" | sudo bash
 ```

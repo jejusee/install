@@ -34,20 +34,29 @@ if [ "$reinstall" = true ]; then
         # Debian 기반 배포판
         sudo apt-get update
         sudo apt-get remove docker docker-engine docker.io containerd runc
-        sudo apt-get install -y \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release
+        sudo apt-get install -y ca-certificates curl gnupg lsb-release
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
         echo \
             "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
             $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         sudo apt-get update
         sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+    elif [ -x "$(command -v dnf)" ]; then
+        # DNF를 사용하여 Docker 설치
+        sudo dnf remove -y docker \
+                          docker-client \
+                          docker-client-latest \
+                          docker-common \
+                          docker-latest \
+                          docker-latest-logrotate \
+                          docker-logrotate \
+                          docker-engine
+        sudo dnf install -y dnf-plugins-core
+        sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+        sudo dnf install -y docker-ce docker-ce-cli containerd.io
     elif [ -x "$(command -v yum)" ]; then
         # Red Hat 기반 배포판
-        sudo yum remove docker \
+        sudo yum remove -y docker \
                     docker-client \
                     docker-client-latest \
                     docker-common \
@@ -56,9 +65,7 @@ if [ "$reinstall" = true ]; then
                     docker-logrotate \
                     docker-engine
         sudo yum install -y yum-utils
-        sudo yum-config-manager \
-            --add-repo \
-            https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
         sudo yum install -y docker-ce docker-ce-cli containerd.io
     elif [ -x "$(command -v zypper)" ]; then
         # SUSE 기반 배포판

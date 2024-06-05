@@ -12,7 +12,7 @@ else
     docker_installed=false
 fi
 
-echo "현재 설치된 Docker 버전: $current_version"
+echo "현재 Docker 버전: $current_version"
 echo "최신 Docker 버전: $latest_version"
 
 if [ "$docker_installed" = true ] && [ "$current_version" = "$latest_version" ]; then

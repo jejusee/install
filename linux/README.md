@@ -5,10 +5,6 @@ docker
 ```
 curl -fsSL "https://raw.githubusercontent.com/jejusee/install/main/linux/docker.sh" | sudo bash
 ```
-docker-compose
-```
-curl -fsSL "https://raw.githubusercontent.com/jejusee/install/main/linux/docker-compose.sh" | sudo bash
-```
 
 git
 ```

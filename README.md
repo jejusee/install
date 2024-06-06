@@ -1,6 +1,13 @@
 # install
 설치 스크립트
 
+curl 설치
+```
+apt install -y curl
+yum install -y curl
+dnf install -y curl
+```
+
 docker
 ```
 curl -fsSL "https://raw.githubusercontent.com/jejusee/install/main/docker.sh" | sudo bash

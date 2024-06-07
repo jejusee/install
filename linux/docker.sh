@@ -5,15 +5,17 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     DISTRO=$ID
     VERSION=$VERSION_ID
-    ARCH=$(uname -m)
+    ARCHITECTURE=$(uname -m)
     
-    echo "This is ${NAME}, version ${VERSION}, architecture ${ARCH}."
+    echo "This is ${NAME}, version ${VERSION}, architecture ${ARCHITECTURE}."
 else
     echo "Unsupported Linux distribution."
     exit 1
 fi
 
 # 배포판 및 아키텍처에 따른 분기 처리
+#
+echo "docker 를 설치합니다."
 case "${DISTRO}" in
     centos)
         # Uninstall old versions
@@ -178,6 +180,27 @@ case "${DISTRO}" in
         ;;
 esac
 
-# 최종 상태 확인
+echo "Docker Compose 를 설치합니다."
+case $ARCHITECTURE in
+    "x86_64")
+        sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+        sudo chmod +x /usr/bin/docker-compose
+        echo "Docker Compose 설치 완료."
+        ;;
+    "aarch64")
+        sudo dnf install -y libffi libffi-devel openssl-devel python3 python3-pip python3-devel
+        sudo pip3 install docker-compose
+#        sudo mv /usr/local/bin/docker-compose /usr/bin/
+        echo "Docker Compose 설치 완료."
+        ;;
+    *)
+        echo "Unknown or unsupported architecture"
+        ;;
+   esac
+
+# 설치 확인
+echo "설치된 Docker 버전:"
 docker --version
-sudo systemctl status docker --no-pager
+
+echo "설치된 Docker Compose 버전:"
+docker-compose --version

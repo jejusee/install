@@ -1,96 +1,196 @@
 #!/bin/bash
 
-# 최신 Docker 버전을 GitHub API를 통해 확인
-latest_version=$(curl -s https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-#latest_version=$(curl -s https://api.github.com/repos/moby/moby/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-
-# 현재 설치된 Docker 버전 확인
-if command -v docker &> /dev/null; then
-    current_version=$(docker version --format '{{.Server.Version}}')
-    docker_installed=true
+# /etc/os-release 파일을 읽고 배포판 정보 결정
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    DISTRO=$ID
+    VERSION=$VERSION_ID
+    ARCH=$(uname -m)
+    
+    echo "This is ${NAME}, version ${VERSION}, architecture ${ARCH}."
 else
-    current_version="none"
-    docker_installed=false
+    echo "Unsupported Linux distribution."
+    exit 1
 fi
 
-echo "현재 Docker 버전: $current_version"
-echo "최신 Docker 버전: $latest_version"
+# 배포판 및 아키텍처에 따른 분기 처리
+case "${DISTRO}" in
+    centos)
+        echo "This is CentOS, version ${VERSION}, architecture ${ARCH}."
 
-if [ "$docker_installed" = true ] && [ "$current_version" = "$latest_version" ]; then
-    read -p "이미 최신 버전의 Docker가 설치되어 있습니다. 다시 설치할까요? (y/N): " user_input
-    user_input=${user_input:-n}
-    if [[ "$user_input" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        reinstall=true
-    else
-        reinstall=false
-    fi
-else
-    reinstall=true
-fi
+        # Uninstall old versions
+        sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
 
-if [ "$reinstall" = true ]; then
-    # Docker 설치 또는 업데이트 명령
-    if [ -x "$(command -v apt-get)" ]; then
-        # Debian 기반 배포판
-        sudo apt-get update
-        sudo apt-get remove docker docker-engine docker.io containerd runc
-        sudo apt-get install -y ca-certificates curl gnupg lsb-release
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt-get update
-        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-    elif [ -x "$(command -v dnf)" ]; then
-        # DNF를 사용하여 Docker 설치
-        sudo dnf remove -y docker \
-                          docker-client \
-                          docker-client-latest \
-                          docker-common \
-                          docker-latest \
-                          docker-latest-logrotate \
-                          docker-logrotate \
-                          docker-engine
-        sudo dnf install -y dnf-plugins-core
-        sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-        sudo dnf install -y docker-ce docker-ce-cli containerd.io
-    elif [ -x "$(command -v yum)" ]; then
-        # Red Hat 기반 배포판
-        sudo yum remove -y docker \
-                    docker-client \
-                    docker-client-latest \
-                    docker-common \
-                    docker-latest \
-                    docker-latest-logrotate \
-                    docker-logrotate \
-                    docker-engine
+        # Set up the repository
         sudo yum install -y yum-utils
         sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-        sudo yum install -y docker-ce docker-ce-cli containerd.io
-    elif [ -x "$(command -v zypper)" ]; then
-        # SUSE 기반 배포판
-        sudo zypper remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
-        sudo zypper install -y docker
-    else
-        echo "지원되지 않는 패키지 매니저입니다."
-        exit 1
-    fi
 
-    # Docker 서비스 시작 및 활성화
-    sudo systemctl start docker
-    sudo systemctl enable docker
-else
-    echo "Docker 설치 또는 업데이트를 건너뜁니다."
-fi
+         # Install Docker Engine(Latest)
+         sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Docker 데몬이 실행 중인지 확인
-if ! sudo systemctl is-active --quiet docker; then
-    echo "Docker 데몬이 실행 중이 아닙니다. 활성화합니다."
-    sudo systemctl start docker
-    sudo systemctl enable docker
-else
-    echo "Docker 데몬이 이미 실행 중입니다."
-fi
+         # Start Docker
+         sudo systemctl start docker
+        ;;
+    rhel | "redhat")
+        echo "This is Red Hat Enterprise Linux, version ${VERSION}, architecture ${ARCH}."
+
+        # Uninstall old versions
+        sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine \
+                  podman \
+                  runc
+
+        # Set up the repository
+        sudo yum install -y yum-utils
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+
+        # Install Docker Engine(Latest)
+        sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+         # Start Docker
+         sudo systemctl start docker
+        ;;
+    fedora)
+        echo "This is Fedora, version ${VERSION}, architecture ${ARCH}."
+
+        # Uninstall old versions
+        sudo dnf remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-selinux \
+                  docker-engine-selinux \
+                  docker-engine
+
+        # Set up the repository
+        sudo dnf -y install dnf-plugins-core
+        sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+
+        # Install Docker Engine(Latest)
+        sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        
+         # Start Docker
+         sudo systemctl start docker && sudo systemctl enable docker
+        ;;
+    debian)
+        echo "This is Debian, version ${VERSION}, architecture ${ARCH}."
+
+        # Uninstall old versions
+        for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
+
+        # Set up Docker's apt repository.
+        # Add Docker's official GPG key:
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+        
+        # Add the repository to Apt sources:
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+
+        # Install Docker Engine(Latest)
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        ;;
+    ubuntu)
+        echo "This is Ubuntu, version ${VERSION}, architecture ${ARCH}."
+
+        # Uninstall old versions
+        for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+
+        # Set up Docker's apt repository.
+        # Add Docker's official GPG key:
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+        
+        # Add the repository to Apt sources:
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+
+        # Install Docker Engine(Latest)
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        ;;
+    raspbian)
+        echo "This is Raspbian (for Raspberry Pi), version ${VERSION}, architecture ${ARCH}."
+        
+        # Uninstall old versions
+        for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
+
+        # Set up Docker's apt repository.
+        # Add Docker's official GPG key:
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/raspbian/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+        
+        # Set up Docker's APT repository:
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/raspbian \
+          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        
+        # Install Docker Engine(Latest)
+         sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        ;;
+    sles)
+        echo "This is SUSE Linux Enterprise Server, version ${VERSION}, architecture ${ARCH}."
+
+        #  OpenSUSE SELinux repository
+        opensuse_repo="https://download.opensuse.org/repositories/security:/SELinux/openSUSE_Factory/security:SELinux.repo"
+        sudo zypper addrepo $opensuse_repo
+
+        # Uninstall old versions
+        sudo zypper remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine \
+                  runc
+
+        # Set up the rpm repository
+        sudo zypper addrepo https://download.docker.com/linux/sles/docker-ce.repo
+
+        # Install Docker Engine(Latest)
+        sudo zypper install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+        # Start Docker
+        sudo systemctl start docker && sudo systemctl enable docker
+        ;;
+    *)
+        echo "Unknown or unsupported Linux distribution."
+        ;;
+esac
 
 # 최종 상태 확인
 docker --version

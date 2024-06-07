@@ -7,7 +7,7 @@ if [ -f /etc/os-release ]; then
     VERSION=$VERSION_ID
     ARCHITECTURE=$(uname -m)
     
-    echo "This is ${NAME}, version ${VERSION}, architecture ${ARCHITECTURE}."
+    echo -e "\e[1;32mThis is ${NAME}, version ${VERSION}, architecture ${ARCHITECTURE}.\e[0m"
 else
     echo "Unsupported Linux distribution."
     exit 1

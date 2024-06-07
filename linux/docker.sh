@@ -16,8 +16,6 @@ fi
 # 배포판 및 아키텍처에 따른 분기 처리
 case "${DISTRO}" in
     centos)
-        echo "This is CentOS, version ${VERSION}, architecture ${ARCH}."
-
         # Uninstall old versions
         sudo yum remove docker \
                   docker-client \
@@ -39,8 +37,6 @@ case "${DISTRO}" in
          sudo systemctl start docker
         ;;
     rhel | "redhat")
-        echo "This is Red Hat Enterprise Linux, version ${VERSION}, architecture ${ARCH}."
-
         # Uninstall old versions
         sudo yum remove docker \
                   docker-client \
@@ -64,8 +60,6 @@ case "${DISTRO}" in
          sudo systemctl start docker
         ;;
     fedora)
-        echo "This is Fedora, version ${VERSION}, architecture ${ARCH}."
-
         # Uninstall old versions
         sudo dnf remove docker \
                   docker-client \
@@ -89,8 +83,6 @@ case "${DISTRO}" in
          sudo systemctl start docker && sudo systemctl enable docker
         ;;
     debian)
-        echo "This is Debian, version ${VERSION}, architecture ${ARCH}."
-
         # Uninstall old versions
         for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
@@ -113,8 +105,6 @@ case "${DISTRO}" in
         sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
         ;;
     ubuntu)
-        echo "This is Ubuntu, version ${VERSION}, architecture ${ARCH}."
-
         # Uninstall old versions
         for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
@@ -136,9 +126,7 @@ case "${DISTRO}" in
         # Install Docker Engine(Latest)
         sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
         ;;
-    raspbian)
-        echo "This is Raspbian (for Raspberry Pi), version ${VERSION}, architecture ${ARCH}."
-        
+    raspbian)        
         # Uninstall old versions
         for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
@@ -161,8 +149,6 @@ case "${DISTRO}" in
          sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
         ;;
     sles)
-        echo "This is SUSE Linux Enterprise Server, version ${VERSION}, architecture ${ARCH}."
-
         #  OpenSUSE SELinux repository
         opensuse_repo="https://download.opensuse.org/repositories/security:/SELinux/openSUSE_Factory/security:SELinux.repo"
         sudo zypper addrepo $opensuse_repo

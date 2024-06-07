@@ -3,9 +3,10 @@
 
 curl 설치
 ```
-apt install -y curl
-yum install -y curl
-dnf install -y curl
+if [ -x "$(command -v apt)" ]; then  apt update -y && apt install -y curl; \
+elif [ -x "$(command -v yum)" ]; then  yum install -y curl; \
+elif [ -x "$(command -v dnf)" ]; then  dnf install -y curl; \
+fi
 ```
 
 docker

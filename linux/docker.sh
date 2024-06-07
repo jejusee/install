@@ -181,22 +181,9 @@ case "${DISTRO}" in
 esac
 
 echo "Docker Compose 를 설치합니다."
-case $ARCHITECTURE in
-    "x86_64")
-        sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-        sudo chmod +x /usr/bin/docker-compose
-        echo "Docker Compose 설치 완료."
-        ;;
-    "aarch64")
-        sudo dnf install -y libffi libffi-devel openssl-devel python3 python3-pip python3-devel
-        sudo pip3 install docker-compose
-#        sudo mv /usr/local/bin/docker-compose /usr/bin/
-        echo "Docker Compose 설치 완료."
-        ;;
-    *)
-        echo "Unknown or unsupported architecture"
-        ;;
-   esac
+sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+echo "Docker Compose 설치 완료."
 
 # 설치 확인
 echo "설치된 Docker 버전:"

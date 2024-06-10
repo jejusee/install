@@ -1,11 +1,13 @@
 # install
 설치 스크립트
 
-curl 설치
+기본 설치: curl, git
 ```
-if [ -x "$(command -v apt)" ]; then  apt update -y && apt install -y curl; \
-elif [ -x "$(command -v yum)" ]; then  yum install -y curl; \
-elif [ -x "$(command -v dnf)" ]; then  dnf install -y curl; \
+if [ -x "$(command -v apt)" ]; then  sudo apt update -y && sudo apt install -y curl git; \
+elif [ -x "$(command -v yum)" ]; then  sudo yum install -y curl git; \
+elif [ -x "$(command -v dnf)" ]; then  sudo dnf install -y curl git; \
+elif [ -x "$(command -v zypper)" ]; then  sudo zypper refresh && sudo pacman -S curl git; \
+elif [ -x "$(command -v pacman)" ]; then  sudo pacman -Sy && sudo dnf install -y curl git; \
 fi
 ```
 
